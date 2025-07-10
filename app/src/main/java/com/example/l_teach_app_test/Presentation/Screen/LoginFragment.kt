@@ -29,6 +29,7 @@ class LoginFragment : Fragment() {
 
     private var isPasswordVisible = true
     private var isEnter = 0
+    private var hasAttemptedLogin = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -104,7 +105,7 @@ class LoginFragment : Fragment() {
                 return@setOnClickListener
             }
             hidePasswordError()
-            
+            hasAttemptedLogin = true
             viewModel.login(cleanedPhone, cleanedPassword)
         }
 
@@ -131,13 +132,15 @@ class LoginFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.loginSuccess.collectLatest { success ->
-                if (success) {
-                    findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
-                    viewModel.clearLoginSuccess()
-                    isEnter++
-                } else {
-                    if (isEnter == 0) {
-                        showPasswordError("Неверный пароль")
+                if (hasAttemptedLogin) {
+                    if (success) {
+                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+                        viewModel.clearLoginSuccess()
+                        isEnter++
+                    } else {
+                        if (isEnter == 0) {
+                            showPasswordError("Неверный пароль")
+                        }
                     }
                 }
             }
